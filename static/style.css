@@ -17,8 +17,11 @@ span.urgent {
     border: 1px solid orange;
 }
 
-.controls {
+.detail-controls {
     float: right;
+}
+
+.controls {
     display: flex;
     align-content: space-between;
     gap: 2em;
@@ -26,5 +29,11 @@ span.urgent {
 
 .item-control {
     display: flex;
-    align-content: space-between;
+    align-content: stretch;
+    justify-content: space-between;
+    padding: 0.2em;
+}
+
+.item-control:hover {
+    background-color: gray;
 }

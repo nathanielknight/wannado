@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block main %}
-<div class="controls">
+<div class="controls detail-controls">
     <a href="/item/{{item.id}}/edit"><button>Edit</button></a>
     <form action="/item/{{item.id}}/delete" method="post">
         <input type="submit" value="Delete" name="delete"
