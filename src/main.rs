@@ -1,12 +1,15 @@
 use anyhow;
-use axum::{extract::Extension, http::StatusCode, response::Html};
+use axum::{
+    extract::{Extension, Path},
+    http::StatusCode,
+    response::Html,
+};
 use std::sync::{Arc, Mutex};
 use tokio;
 use tower_http::services::ServeDir;
 
 mod repo;
 mod template;
-
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -36,16 +39,21 @@ async fn main() -> anyhow::Result<()> {
 
 fn newapp() -> axum::Router {
     use axum::routing::{get, get_service};
+    use repo::Repo;
 
     let static_files =
         get_service(ServeDir::new("./static")).handle_error(|err: std::io::Error| async move {
             (StatusCode::NOT_FOUND, format!("Not Found: {}", err))
         });
-    let repo = Arc::new(Mutex::new(repo::Repo::new()));
+    let mut repo = Repo::new();
+    repo.add("Test item", "Body of test item", true, false)
+        .expect("Failed to insert test item");
+    let repomux = Arc::new(Mutex::new(repo));
 
     axum::Router::new()
         .route("/", get(get_index))
-        .layer(Extension(repo))
+        .route("/item/:id", get(get_item))
+        .layer(Extension(repomux))
         .nest("/static", static_files)
 }
 
@@ -66,3 +74,27 @@ async fn get_index(repo: Extension<Arc<Mutex<repo::Repo>>>) -> Result<Html<Strin
     Ok(Html(body))
 }
 
+async fn get_item(
+    repo: Extension<Arc<Mutex<repo::Repo>>>,
+    Path(item_id): Path<u32>,
+) -> Result<Html<String>, AppError> {
+    let repo = repo.lock().map_err(|e| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            String::from("Couldn't lock the item repo"),
+        )
+    })?;
+
+    let item = repo
+        .get(item_id)
+        .ok_or_else(|| (StatusCode::NOT_FOUND, String::from("No such item")))?;
+    let viewmodel: template::Item = item.into();
+    let body = viewmodel.to_string();
+    Ok(Html(body))
+}
+
+// get_edit_item
+// post_edit_item
+// post_delete_item
+// get_new_item
+// post_new_item

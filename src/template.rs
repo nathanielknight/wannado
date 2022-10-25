@@ -29,3 +29,15 @@ impl<'a> Index<'a> {
         index
     }
 }
+
+#[derive(Template)]
+#[template(path = "item.html")]
+pub struct Item<'a> {
+    item: &'a repo::Item,
+}
+
+impl<'a> From<&'a repo::Item> for Item<'a> {
+    fn from(item: &'a repo::Item) -> Self {
+        Item { item }
+    }
+}

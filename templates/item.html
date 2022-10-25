@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block main %}
+<div class="controls">
+    <a href="/item/{{item.id}}/edit"><button>Edit</button></a>
+    <form action="/item/{{item.id}}/delete" method="post">
+        <input type="submit" value="Delete" name="delete"
+            onclick="return confirm(`Delete this item? This can't be undone.`)" style="background-color: darkred" />
+    </form>
+</div>
+
+<h1>{{item.title}}</h1>
+
+<p>
+    {% if item.important %}<span class="flag important">important</span>{% endif %}
+    {% if item.urgent %}<span class="flag urgent">urgent</span>{% endif %}
+</p>
+<p>Created {{item.created.to_rfc2822()}}</p>
+
+<hr />
+
+<div>{{item.body}}</div>
+{% endblock %}
