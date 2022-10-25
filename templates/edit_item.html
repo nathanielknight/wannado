@@ -15,7 +15,7 @@
 
     <p>Created {{item.created.to_rfc2822()}}</p>
 
-    <div class="controls">
+    <div>
         <input type="checkbox" id="important" name="important" {%if item.important %}checked{% endif %} />
         <label for="important" class="important">Important</label>
         <input type="checkbox" id="urgent" name="urgent" {%if item.urgent %}checked{% endif %} />
@@ -26,5 +26,4 @@
 
     <input type="submit" value="Save" />
 </form>
-
 {% endblock %}

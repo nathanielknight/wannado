@@ -1,8 +1,8 @@
 use anyhow;
 use axum::{
-    extract::{Extension, Path},
+    extract::{Extension, Form, Path},
     http::StatusCode,
-    response::Html,
+    response::{Html, Redirect},
 };
 use std::sync::{Arc, Mutex, MutexGuard};
 use tokio;
@@ -38,7 +38,7 @@ async fn main() -> anyhow::Result<()> {
 }
 
 fn newapp() -> axum::Router {
-    use axum::routing::{get, get_service};
+    use axum::routing::{get, get_service, post};
     use repo::Repo;
 
     let static_files =
@@ -53,7 +53,7 @@ fn newapp() -> axum::Router {
     axum::Router::new()
         .route("/", get(get_index))
         .route("/item/:id", get(get_item))
-        .route("/item/:id/edit", get(get_edit_item))
+        .route("/item/:id/edit", get(get_edit_item).post(post_edit_item))
         .layer(Extension(repomux))
         .nest("/static", static_files)
 }
@@ -98,11 +98,43 @@ async fn get_edit_item(
     Ok(Html(body))
 }
 
+async fn post_edit_item(
+    Extension(repomux): Extension<Arc<Mutex<repo::Repo>>>,
+    Path(item_id): Path<u32>,
+    Form(edits): Form<EditParams>,
+) -> Result<Redirect, AppError> {
+    let mut repo = lock_repo(&repomux)?;
+    let mut item = repo
+        .get(item_id)
+        .ok_or((StatusCode::NOT_FOUND, "No such item".to_owned()))?
+        .clone();
+    item.apply(&edits);
+    repo.upsert(&item)?;
+    Ok(Redirect::to(&format!("/item/{}", item.id)))
+}
 
-// post_edit_item
 // post_delete_item
 // get_new_item
 // post_new_item
+
+#[derive(serde::Deserialize)]
+struct EditParams {
+    pub title: String,
+    pub body: String,
+    pub important: Option<String>,
+    pub urgent: Option<String>,
+}
+
+impl repo::Item {
+    fn apply(&mut self, edits: &EditParams) {
+        self.title.clear();
+        self.title.insert_str(0, &edits.title);
+        self.body.clear();
+        self.body.insert_str(0, &edits.body);
+        self.important = edits.important.is_some();
+        self.urgent = edits.urgent.is_some();
+    }
+}
 
 // Helpers
 fn lock_repo<'a>(repomux: &'a Arc<Mutex<repo::Repo>>) -> Result<MutexGuard<repo::Repo>, AppError> {
