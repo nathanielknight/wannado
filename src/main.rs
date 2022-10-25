@@ -54,6 +54,7 @@ fn newapp() -> axum::Router {
         .route("/", get(get_index))
         .route("/item/:id", get(get_item))
         .route("/item/:id/edit", get(get_edit_item).post(post_edit_item))
+        .route("/item/:id/delete", post(post_delete_item))
         .layer(Extension(repomux))
         .nest("/static", static_files)
 }
@@ -113,7 +114,15 @@ async fn post_edit_item(
     Ok(Redirect::to(&format!("/item/{}", item.id)))
 }
 
-// post_delete_item
+async fn post_delete_item(
+    Extension(repomux): Extension<Arc<Mutex<repo::Repo>>>,
+    Path(item_id): Path<u32>,
+) -> Result<Redirect, AppError> {
+    let mut repo = lock_repo(&repomux)?;
+    repo.delete(&item_id)?;
+    Ok(Redirect::to("/"))
+}
+
 // get_new_item
 // post_new_item
 
