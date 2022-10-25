@@ -62,3 +62,14 @@ async fn get_index(repo: Extension<Arc<Mutex<repo::Repo>>>) -> Result<Html<Strin
     let body = format!("Repo contains {count} items.");
     Ok(Html(body))
 }
+
+mod template {
+    use crate::repo;
+    use askama::Template;
+
+    #[derive(Template)]
+    #[template(path = "index.html")]
+    pub struct Index<'a> {
+        important_and_urgent: Vec<&'a repo::Item>,
+    }
+}

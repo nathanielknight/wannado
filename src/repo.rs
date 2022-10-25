@@ -5,12 +5,12 @@ use super::{AppError, StatusCode};
 
 #[derive(Clone)]
 pub struct Item {
-    id: u32,
-    title: String,
-    body: String,
-    important: bool,
-    urgent: bool,
-    created: DateTime<Local>,
+    pub id: u32,
+    pub title: String,
+    pub body: String,
+    pub important: bool,
+    pub urgent: bool,
+    pub created: DateTime<Local>,
 }
 
 pub struct Repo {

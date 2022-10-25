@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block main %}
+<h1>Impotrant and Urgent</h1>
+<li>
+    {% for item in important_and_urgent %}
+    <li><a href="/item/{{item.id}}">{{item.title}}</a></li>
+    {% endfor %}
+</li>
+
+
+{% endblock %}
