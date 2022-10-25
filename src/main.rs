@@ -4,7 +4,7 @@ use axum::{
     http::StatusCode,
     response::Html,
 };
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, MutexGuard};
 use tokio;
 use tower_http::services::ServeDir;
 
@@ -61,13 +61,10 @@ type AppError = (StatusCode, String);
 
 // Handlers
 
-async fn get_index(repo: Extension<Arc<Mutex<repo::Repo>>>) -> Result<Html<String>, AppError> {
-    let repo = repo.lock().map_err(|_| {
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            String::from("Couldn't lock the item repo"),
-        )
-    })?;
+async fn get_index(
+    Extension(repomux): Extension<Arc<Mutex<repo::Repo>>>,
+) -> Result<Html<String>, AppError> {
+    let repo = lock_repo(&repomux)?;
     let items = repo.all()?;
     let viewmodel = template::Index::from_items(&items);
     let body = viewmodel.to_string();
@@ -75,16 +72,10 @@ async fn get_index(repo: Extension<Arc<Mutex<repo::Repo>>>) -> Result<Html<Strin
 }
 
 async fn get_item(
-    repo: Extension<Arc<Mutex<repo::Repo>>>,
+    Extension(repomux): Extension<Arc<Mutex<repo::Repo>>>,
     Path(item_id): Path<u32>,
 ) -> Result<Html<String>, AppError> {
-    let repo = repo.lock().map_err(|e| {
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            String::from("Couldn't lock the item repo"),
-        )
-    })?;
-
+    let repo = lock_repo(&repomux)?;
     let item = repo
         .get(item_id)
         .ok_or_else(|| (StatusCode::NOT_FOUND, String::from("No such item")))?;
@@ -98,3 +89,13 @@ async fn get_item(
 // post_delete_item
 // get_new_item
 // post_new_item
+
+// Helpers
+fn lock_repo<'a>(repomux: &'a Arc<Mutex<repo::Repo>>) -> Result<MutexGuard<repo::Repo>, AppError> {
+    repomux.lock().map_err(|e| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            String::from("Couldn't lock the item repo"),
+        )
+    })
+}
