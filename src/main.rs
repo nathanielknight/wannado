@@ -5,6 +5,8 @@ use tokio;
 use tower_http::services::ServeDir;
 
 mod repo;
+mod template;
+
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -64,36 +66,3 @@ async fn get_index(repo: Extension<Arc<Mutex<repo::Repo>>>) -> Result<Html<Strin
     Ok(Html(body))
 }
 
-mod template {
-    use crate::repo;
-    use askama::Template;
-
-    #[derive(Template)]
-    #[template(path = "index.html")]
-    pub struct Index<'a> {
-        important_and_urgent: Vec<&'a repo::Item>,
-        important: Vec<&'a repo::Item>,
-        urgent: Vec<&'a repo::Item>,
-        other: Vec<&'a repo::Item>,
-    }
-
-    impl<'a> Index<'a> {
-        pub fn from_items(items: &'a Vec<&repo::Item>) -> Index<'a> {
-            let mut index = Index {
-                important_and_urgent: Vec::new(),
-                important: Vec::new(),
-                urgent: Vec::new(),
-                other: Vec::new(),
-            };
-            for item in items {
-                match (item.important, item.urgent) {
-                    (true, true) => index.important_and_urgent.push(item),
-                    (true, false) => index.important.push(item),
-                    (false, true) => index.urgent.push(item),
-                    (false, false) => index.other.push(item),
-                }
-            }
-            index
-        }
-    }
-}
