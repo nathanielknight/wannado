@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block main %}
+<div class="controls detail-controls">
+    <a href="/item/{{item.id}}"><button>Cancel</button></a>
+    <form action="/item/{{item.id}}/delete" method="post">
+        <input type="submit" value="Delete" name="delete"
+            onclick="return confirm(`Delete this item? This can't be undone.`)" style="background-color: darkred" />
+    </form>
+</div>
+
+<form action="/item/{{item.id}}/edit" method="post">
+    <label for="title">Title</label>
+    <input type="text" name="title" value="{{item.title}}" />
+
+    <p>Created {{item.created.to_rfc2822()}}</p>
+
+    <div class="controls">
+        <input type="checkbox" id="important" name="important" {%if item.important %}checked{% endif %} />
+        <label for="important" class="important">Important</label>
+        <input type="checkbox" id="urgent" name="urgent" {%if item.urgent %}checked{% endif %} />
+        <label for="urgent" class="urgent">Urgent</label>
+    </div>
+    <label for="body">Body</label>
+    <textarea name="body">{{item.body}}</textarea>
+
+    <input type="submit" value="Save" />
+</form>
+
+{% endblock %}

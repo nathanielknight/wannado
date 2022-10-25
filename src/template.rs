@@ -41,3 +41,15 @@ impl<'a> From<&'a repo::Item> for Item<'a> {
         Item { item }
     }
 }
+
+#[derive(Template)]
+#[template(path = "edit_item.html")]
+pub struct EditItem<'a> {
+    item: &'a repo::Item,
+}
+
+impl<'a> From<&'a repo::Item> for  EditItem<'a> {
+    fn from(item: &'a repo::Item) -> Self {
+        EditItem { item }
+    }
+}

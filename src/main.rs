@@ -53,6 +53,7 @@ fn newapp() -> axum::Router {
     axum::Router::new()
         .route("/", get(get_index))
         .route("/item/:id", get(get_item))
+        .route("/item/:id/edit", get(get_edit_item))
         .layer(Extension(repomux))
         .nest("/static", static_files)
 }
@@ -84,7 +85,20 @@ async fn get_item(
     Ok(Html(body))
 }
 
-// get_edit_item
+async fn get_edit_item(
+    Extension(repomux): Extension<Arc<Mutex<repo::Repo>>>,
+    Path(item_id): Path<u32>,
+) -> Result<Html<String>, AppError> {
+    let repo = lock_repo(&repomux)?;
+    let item = repo
+        .get(item_id)
+        .ok_or_else(|| (StatusCode::NOT_FOUND, String::from("No such item")))?;
+    let viewmodel: template::EditItem = item.into();
+    let body = viewmodel.to_string();
+    Ok(Html(body))
+}
+
+
 // post_edit_item
 // post_delete_item
 // get_new_item

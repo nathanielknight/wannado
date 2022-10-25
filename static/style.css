@@ -9,11 +9,11 @@ span.flag {
     border-radius: 0.2em;
 }
 
-span.important {
+.important {
     border: 1px solid green;
 }
 
-span.urgent {
+.urgent {
     border: 1px solid orange;
 }
 
