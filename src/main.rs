@@ -1,5 +1,6 @@
 use anyhow;
-use axum::response::Html;
+use axum::{extract::Extension, http::StatusCode, response::Html};
+use std::sync::{Arc, Mutex};
 use tokio;
 use tower_http::services::ServeDir;
 
@@ -30,35 +31,41 @@ async fn main() -> anyhow::Result<()> {
 }
 
 fn newapp() -> axum::Router {
-    use axum::http::StatusCode;
     use axum::routing::{get, get_service};
 
     let static_files =
         get_service(ServeDir::new("./static")).handle_error(|err: std::io::Error| async move {
             (StatusCode::NOT_FOUND, format!("Not Found: {}", err))
         });
+    let repo = Arc::new(Mutex::new(repo::Repo::new()));
 
     axum::Router::new()
         .route("/", get(get_index))
+        .layer(Extension(repo))
         .nest("/static", static_files)
 }
 
-#[derive(Debug)]
-pub enum AppError {
-    RepoError(String),
-}
+type AppError = (StatusCode, String);
 
 // Handlers
 
-async fn get_index() -> Html<String> {
-    Html(String::from("Hello, app!"))
+async fn get_index(repo: Extension<Arc<Mutex<repo::Repo>>>) -> Result<Html<String>, AppError> {
+    let repo = repo.lock().map_err(|_| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            String::from("Couldn't lock the item repo"),
+        )
+    })?;
+    let count = repo.all()?.len();
+    let body = format!("Repo contains {count} items.");
+    Ok(Html(body))
 }
 
 mod repo {
     use chrono::{DateTime, Local};
     use std::collections::HashMap;
 
-    use super::AppError;
+    use super::{AppError, StatusCode};
 
     #[derive(Clone)]
     pub struct Item {
@@ -126,7 +133,7 @@ mod repo {
         pub fn delete(&mut self, id: &u32) -> Result<(), AppError> {
             self.items
                 .remove(id)
-                .ok_or_else(|| AppError::RepoError("Item wasn't there?".to_owned()))
+                .ok_or_else(|| (StatusCode::NOT_FOUND, String::from("No such item")))
                 .map(|_| ())
         }
     }
