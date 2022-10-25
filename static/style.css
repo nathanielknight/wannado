@@ -1,0 +1,30 @@
+body {
+    font-family: Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+}
+
+span.flag {
+    font-family: Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace;
+    padding: 0.1em 0.3em;
+    display: inline-block;
+    border-radius: 0.2em;
+}
+
+span.important {
+    border: 1px solid green;
+}
+
+span.urgent {
+    border: 1px solid orange;
+}
+
+.controls {
+    float: right;
+    display: flex;
+    align-content: space-between;
+    gap: 2em;
+}
+
+.item-control {
+    display: flex;
+    align-content: space-between;
+}
