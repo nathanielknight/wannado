@@ -4,6 +4,7 @@ use tower_http::services::ServeDir;
 
 mod handlers;
 mod repo;
+mod script;
 mod template;
 
 // ------------------------------------------------------
@@ -31,6 +32,7 @@ async fn main() {
 
     let app = newapp();
 
+    script::start_recurring_script();
     println!("Listening on {addr}");
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
