@@ -66,7 +66,7 @@ fn lock_repo<'a>(repomux: &'a Arc<Mutex<repo::Repo>>) -> Result<MutexGuard<repo:
     repomux.lock().map_err(|e| {
         (
             StatusCode::INTERNAL_SERVER_ERROR,
-            String::from("Couldn't lock the item repo"),
+            format!("Couldn't lock the item repo: {:?}", e),
         )
     })
 }
