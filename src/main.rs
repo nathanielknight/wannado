@@ -52,6 +52,7 @@ fn newapp() -> axum::Router {
 
     axum::Router::new()
         .route("/", get(get_index))
+        .route("/item/new", get(get_new_item).post(post_new_item))
         .route("/item/:id", get(get_item))
         .route("/item/:id/edit", get(get_edit_item).post(post_edit_item))
         .route("/item/:id/delete", post(post_delete_item))
@@ -59,8 +60,20 @@ fn newapp() -> axum::Router {
         .nest("/static", static_files)
 }
 
+// ----------------------------------------------------------------
+// Helpers
+fn lock_repo<'a>(repomux: &'a Arc<Mutex<repo::Repo>>) -> Result<MutexGuard<repo::Repo>, AppError> {
+    repomux.lock().map_err(|e| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            String::from("Couldn't lock the item repo"),
+        )
+    })
+}
+
 type AppError = (StatusCode, String);
 
+// ----------------------------------------------------------------
 // Handlers
 
 async fn get_index(
@@ -123,9 +136,6 @@ async fn post_delete_item(
     Ok(Redirect::to("/"))
 }
 
-// get_new_item
-// post_new_item
-
 #[derive(serde::Deserialize)]
 struct EditParams {
     pub title: String,
@@ -145,12 +155,20 @@ impl repo::Item {
     }
 }
 
-// Helpers
-fn lock_repo<'a>(repomux: &'a Arc<Mutex<repo::Repo>>) -> Result<MutexGuard<repo::Repo>, AppError> {
-    repomux.lock().map_err(|e| {
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            String::from("Couldn't lock the item repo"),
-        )
-    })
+async fn get_new_item() -> Html<String> {
+    Html(template::NewItem::default().to_string())
+}
+
+async fn post_new_item(
+    Extension(repomux): Extension<Arc<Mutex<repo::Repo>>>,
+    Form(edits): Form<EditParams>,
+) -> Result<Redirect, AppError> {
+    let mut repo = lock_repo(&repomux)?;
+    let item = repo.add(
+        &edits.title,
+        &edits.body,
+        edits.important.is_some(),
+        edits.urgent.is_some(),
+    )?;
+    Ok(Redirect::to(&format!("/item/{}", item.id)))
 }

@@ -48,8 +48,17 @@ pub struct EditItem<'a> {
     item: &'a repo::Item,
 }
 
-impl<'a> From<&'a repo::Item> for  EditItem<'a> {
+impl<'a> From<&'a repo::Item> for EditItem<'a> {
     fn from(item: &'a repo::Item) -> Self {
         EditItem { item }
     }
+}
+
+#[derive(Template, Default)]
+#[template(path = "new_item.html")]
+pub struct NewItem<'a> {
+    title: Option<&'a str>,
+    body: Option<&'a str>,
+    important: Option<bool>,
+    urgent: Option<bool>,
 }
