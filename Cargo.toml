@@ -12,6 +12,6 @@ serde = { version = "1", features = ["derive"] }
 rusqlite = { version = "0.27", features = ["chrono", "bundled"] }
 chrono = { version = "0.4.19", features = ["serde"] }
 askama = { version = "0.11.0"}
-anyhow = "1"
 tower-http = { version = "0.2.0", features = ["fs", "trace"] }
 pulldown-cmark = "0.9.1"
+serde_json = "1.0.87"

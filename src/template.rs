@@ -11,7 +11,7 @@ pub struct Index<'a> {
 }
 
 impl<'a> Index<'a> {
-    pub fn from_items(items: &'a Vec<&repo::Item>) -> Index<'a> {
+    pub fn from_items(items: &'a Vec<repo::Item>) -> Index<'a> {
         let mut index = Index {
             important_and_urgent: Vec::new(),
             important: Vec::new(),
@@ -32,24 +32,24 @@ impl<'a> Index<'a> {
 
 #[derive(Template)]
 #[template(path = "item.html")]
-pub struct Item<'a> {
-    item: &'a repo::Item,
+pub struct Item {
+    item: repo::Item,
 }
 
-impl<'a> From<&'a repo::Item> for Item<'a> {
-    fn from(item: &'a repo::Item) -> Self {
+impl From<repo::Item> for Item {
+    fn from(item: repo::Item) -> Self {
         Item { item }
     }
 }
 
 #[derive(Template)]
 #[template(path = "edit_item.html")]
-pub struct EditItem<'a> {
-    item: &'a repo::Item,
+pub struct EditItem {
+    item: repo::Item,
 }
 
-impl<'a> From<&'a repo::Item> for EditItem<'a> {
-    fn from(item: &'a repo::Item) -> Self {
+impl From<repo::Item> for EditItem {
+    fn from(item: repo::Item) -> Self {
         EditItem { item }
     }
 }

@@ -1,25 +1,25 @@
-use anyhow;
 use axum::{
     extract::{Extension, Form, Path},
     http::StatusCode,
     response::{Html, Redirect},
 };
 use std::sync::{Arc, Mutex, MutexGuard};
-use tokio;
 use tower_http::services::ServeDir;
 
 mod repo;
 mod template;
 
 #[tokio::main]
-async fn main() -> anyhow::Result<()> {
+async fn main() {
     use std::net::SocketAddr;
 
     // Initialize database
     let addr: SocketAddr = {
         let args: Vec<String> = std::env::args().collect();
         if args.len() == 2 {
-            args[1].parse()?
+            args[1]
+                .parse()
+                .expect("Expected a socket address. eg:\n127.0.0.1:3000")
         } else {
             println!("usage: eisenhower-todo ADDRESS");
             let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
@@ -33,8 +33,8 @@ async fn main() -> anyhow::Result<()> {
     println!("Listening on {addr}");
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
-        .await?;
-    Ok(())
+        .await
+        .expect("Failed to start server");
 }
 
 fn newapp() -> axum::Router {
@@ -45,7 +45,9 @@ fn newapp() -> axum::Router {
         get_service(ServeDir::new("./static")).handle_error(|err: std::io::Error| async move {
             (StatusCode::NOT_FOUND, format!("Not Found: {}", err))
         });
-    let mut repo = Repo::new();
+    let cxn = rusqlite::Connection::open("./items.sqlite3").expect("Couldn't open database");
+    let mut repo = Repo::new(cxn);
+    repo.init().expect("Database initialisation failed");
     repo.add("Test item", "Body of test item", true, false)
         .expect("Failed to insert test item");
     let repomux = Arc::new(Mutex::new(repo));
@@ -62,7 +64,7 @@ fn newapp() -> axum::Router {
 
 // ----------------------------------------------------------------
 // Helpers
-fn lock_repo<'a>(repomux: &'a Arc<Mutex<repo::Repo>>) -> Result<MutexGuard<repo::Repo>, AppError> {
+fn lock_repo(repomux: &Arc<Mutex<repo::Repo>>) -> Result<MutexGuard<repo::Repo>, AppError> {
     repomux.lock().map_err(|e| {
         (
             StatusCode::INTERNAL_SERVER_ERROR,
@@ -79,7 +81,7 @@ type AppError = (StatusCode, String);
 async fn get_index(
     Extension(repomux): Extension<Arc<Mutex<repo::Repo>>>,
 ) -> Result<Html<String>, AppError> {
-    let repo = lock_repo(&repomux)?;
+    let mut repo = lock_repo(&repomux)?;
     let items = repo.all()?;
     let viewmodel = template::Index::from_items(&items);
     let body = viewmodel.to_string();
@@ -91,9 +93,7 @@ async fn get_item(
     Path(item_id): Path<u32>,
 ) -> Result<Html<String>, AppError> {
     let repo = lock_repo(&repomux)?;
-    let item = repo
-        .get(item_id)
-        .ok_or_else(|| (StatusCode::NOT_FOUND, String::from("No such item")))?;
+    let item = repo.get(item_id)?;
     let viewmodel: template::Item = item.into();
     let body = viewmodel.to_string();
     Ok(Html(body))
@@ -104,9 +104,7 @@ async fn get_edit_item(
     Path(item_id): Path<u32>,
 ) -> Result<Html<String>, AppError> {
     let repo = lock_repo(&repomux)?;
-    let item = repo
-        .get(item_id)
-        .ok_or_else(|| (StatusCode::NOT_FOUND, String::from("No such item")))?;
+    let item = repo.get(item_id)?;
     let viewmodel: template::EditItem = item.into();
     let body = viewmodel.to_string();
     Ok(Html(body))
@@ -118,12 +116,9 @@ async fn post_edit_item(
     Form(edits): Form<EditParams>,
 ) -> Result<Redirect, AppError> {
     let mut repo = lock_repo(&repomux)?;
-    let mut item = repo
-        .get(item_id)
-        .ok_or((StatusCode::NOT_FOUND, "No such item".to_owned()))?
-        .clone();
+    let mut item = repo.get(item_id)?;
     item.apply(&edits);
-    repo.upsert(&item)?;
+    repo.update(&item)?;
     Ok(Redirect::to(&format!("/item/{}", item.id)))
 }
 
