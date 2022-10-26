@@ -1,13 +1,14 @@
-use axum::{
-    extract::{Extension, Form, Path},
-    http::StatusCode,
-    response::{Html, Redirect},
-};
-use std::sync::{Arc, Mutex, MutexGuard};
+use axum::{extract::Extension, http::StatusCode};
+use std::sync::{Arc, Mutex};
 use tower_http::services::ServeDir;
 
+mod handlers;
 mod repo;
 mod template;
+
+// ------------------------------------------------------
+// Helpers
+pub(crate) type AppError = (StatusCode, String);
 
 #[tokio::main]
 async fn main() {
@@ -53,117 +54,17 @@ fn newapp() -> axum::Router {
     let repomux = Arc::new(Mutex::new(repo));
 
     axum::Router::new()
-        .route("/", get(get_index))
-        .route("/item/new", get(get_new_item).post(post_new_item))
-        .route("/item/:id", get(get_item))
-        .route("/item/:id/edit", get(get_edit_item).post(post_edit_item))
-        .route("/item/:id/delete", post(post_delete_item))
+        .route("/", get(handlers::get_index))
+        .route(
+            "/item/new",
+            get(handlers::get_new_item).post(handlers::post_new_item),
+        )
+        .route("/item/:id", get(handlers::get_item))
+        .route(
+            "/item/:id/edit",
+            get(handlers::get_edit_item).post(handlers::post_edit_item),
+        )
+        .route("/item/:id/delete", post(handlers::post_delete_item))
         .layer(Extension(repomux))
         .nest("/static", static_files)
-}
-
-// ----------------------------------------------------------------
-// Helpers
-fn lock_repo(repomux: &Arc<Mutex<repo::Repo>>) -> Result<MutexGuard<repo::Repo>, AppError> {
-    repomux.lock().map_err(|e| {
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Couldn't lock the item repo: {:?}", e),
-        )
-    })
-}
-
-type AppError = (StatusCode, String);
-
-// ----------------------------------------------------------------
-// Handlers
-
-async fn get_index(
-    Extension(repomux): Extension<Arc<Mutex<repo::Repo>>>,
-) -> Result<Html<String>, AppError> {
-    let mut repo = lock_repo(&repomux)?;
-    let items = repo.all()?;
-    let viewmodel = template::Index::from_items(&items);
-    let body = viewmodel.to_string();
-    Ok(Html(body))
-}
-
-async fn get_item(
-    Extension(repomux): Extension<Arc<Mutex<repo::Repo>>>,
-    Path(item_id): Path<u32>,
-) -> Result<Html<String>, AppError> {
-    let repo = lock_repo(&repomux)?;
-    let item = repo.get(item_id)?;
-    let viewmodel: template::Item = item.into();
-    let body = viewmodel.to_string();
-    Ok(Html(body))
-}
-
-async fn get_edit_item(
-    Extension(repomux): Extension<Arc<Mutex<repo::Repo>>>,
-    Path(item_id): Path<u32>,
-) -> Result<Html<String>, AppError> {
-    let repo = lock_repo(&repomux)?;
-    let item = repo.get(item_id)?;
-    let viewmodel: template::EditItem = item.into();
-    let body = viewmodel.to_string();
-    Ok(Html(body))
-}
-
-async fn post_edit_item(
-    Extension(repomux): Extension<Arc<Mutex<repo::Repo>>>,
-    Path(item_id): Path<u32>,
-    Form(edits): Form<EditParams>,
-) -> Result<Redirect, AppError> {
-    let mut repo = lock_repo(&repomux)?;
-    let mut item = repo.get(item_id)?;
-    item.apply(&edits);
-    repo.update(&item)?;
-    Ok(Redirect::to(&format!("/item/{}", item.id)))
-}
-
-async fn post_delete_item(
-    Extension(repomux): Extension<Arc<Mutex<repo::Repo>>>,
-    Path(item_id): Path<u32>,
-) -> Result<Redirect, AppError> {
-    let mut repo = lock_repo(&repomux)?;
-    repo.delete(&item_id)?;
-    Ok(Redirect::to("/"))
-}
-
-#[derive(serde::Deserialize)]
-struct EditParams {
-    pub title: String,
-    pub body: String,
-    pub important: Option<String>,
-    pub urgent: Option<String>,
-}
-
-impl repo::Item {
-    fn apply(&mut self, edits: &EditParams) {
-        self.title.clear();
-        self.title.insert_str(0, &edits.title);
-        self.body.clear();
-        self.body.insert_str(0, &edits.body);
-        self.important = edits.important.is_some();
-        self.urgent = edits.urgent.is_some();
-    }
-}
-
-async fn get_new_item() -> Html<String> {
-    Html(template::NewItem::default().to_string())
-}
-
-async fn post_new_item(
-    Extension(repomux): Extension<Arc<Mutex<repo::Repo>>>,
-    Form(edits): Form<EditParams>,
-) -> Result<Redirect, AppError> {
-    let mut repo = lock_repo(&repomux)?;
-    let item = repo.add(
-        &edits.title,
-        &edits.body,
-        edits.important.is_some(),
-        edits.urgent.is_some(),
-    )?;
-    Ok(Redirect::to(&format!("/item/{}", item.id)))
 }
