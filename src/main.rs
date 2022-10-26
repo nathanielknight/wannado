@@ -51,8 +51,6 @@ fn newapp() -> axum::Router {
     let cxn = rusqlite::Connection::open("./items.sqlite3").expect("Couldn't open database");
     let mut repo = Repo::new(cxn);
     repo.init().expect("Database initialisation failed");
-    repo.add("Test item", "Body of test item", true, false)
-        .expect("Failed to insert test item");
     let repomux = Arc::new(Mutex::new(repo));
 
     axum::Router::new()
