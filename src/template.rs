@@ -3,17 +3,17 @@ use crate::{AppError, StatusCode};
 use askama::Template;
 
 #[derive(Template)]
-#[template(path = "index.html")]
-pub struct Index<'a> {
+#[template(path = "items-list.html")]
+pub struct ItemsList<'a> {
     important_and_urgent: Vec<&'a repo::Item>,
     important: Vec<&'a repo::Item>,
     urgent: Vec<&'a repo::Item>,
     other: Vec<&'a repo::Item>,
 }
 
-impl<'a> Index<'a> {
-    pub fn from_items(items: &'a Vec<repo::Item>) -> Result<Index<'a>, AppError> {
-        let mut index = Index {
+impl<'a> ItemsList<'a> {
+    pub fn from_items(items: &'a Vec<repo::Item>) -> Result<ItemsList<'a>, AppError> {
+        let mut items_list = ItemsList {
             important_and_urgent: Vec::new(),
             important: Vec::new(),
             urgent: Vec::new(),
@@ -27,18 +27,18 @@ impl<'a> Index<'a> {
         }
         for item in items {
             match (item.important, item.urgent) {
-                (true, true) => index.important_and_urgent.push(item),
-                (true, false) => index.important.push(item),
-                (false, true) => index.urgent.push(item),
-                (false, false) => index.other.push(item),
+                (true, true) => items_list.important_and_urgent.push(item),
+                (true, false) => items_list.important.push(item),
+                (false, true) => items_list.urgent.push(item),
+                (false, false) => items_list.other.push(item),
             }
         }
-        Ok(index)
+        Ok(items_list)
     }
 }
 
 #[derive(Template)]
-#[template(path = "deleted-index.html")]
+#[template(path = "deleted-items-list.html")]
 pub struct DeletedItems {
     items: Vec<repo::Item>,
 }

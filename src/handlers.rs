@@ -8,12 +8,12 @@ use std::sync::{Arc, Mutex, MutexGuard};
 use crate::AppError;
 use crate::{repo, template};
 
-pub(crate) async fn get_index(
+pub(crate) async fn get_items(
     Extension(repomux): Extension<Arc<Mutex<repo::Repo>>>,
 ) -> Result<Html<String>, AppError> {
     let mut repo = lock_repo(&repomux)?;
     let items = repo.all()?;
-    let viewmodel = template::Index::from_items(&items)?;
+    let viewmodel = template::ItemsList::from_items(&items)?;
     let body = viewmodel.to_string();
     Ok(Html(body))
 }

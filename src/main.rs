@@ -54,7 +54,7 @@ fn newapp() -> axum::Router {
     let repomux = Arc::new(Mutex::new(repo));
 
     axum::Router::new()
-        .route("/", get(handlers::get_index))
+        .route("/", get(handlers::get_items))
         .route(
             "/item/new",
             get(handlers::get_new_item).post(handlers::post_new_item),

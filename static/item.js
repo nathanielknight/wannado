@@ -5,7 +5,7 @@ function editItem() {
 
 function deleteItem() {
     let form = document.querySelector("form.delete-item");
-    let response = window.confirm("Delete this item? This can't be undone")
+    let response = window.confirm("Delete this item?")
     console.log(response)
     if (response) {
         form?.submit();
