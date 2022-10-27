@@ -237,7 +237,6 @@ fn test_repo() -> Result<(), AppError> {
 
     repo.delete(&item.id)?; // It's too bad this doesn't mark the item as deleted...
     assert!(repo.get(item.id).is_err());
-    dbg!(repo.get_deleted(item.id));
     assert!(repo.get_deleted(item.id).is_ok());
 
     Ok(())
