@@ -2,6 +2,7 @@ body {
     font-family: Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
     max-width: 40em;
     margin: auto;
+    padding: 0.5em;
     font-size: 14pt;
     display: flex;
     flex-direction: column;
@@ -99,6 +100,10 @@ nav {
     font-size: large;
     text-align: center;
     background-color: orange;
+}
+
+[type="text"] {
+    width: 100%;
 }
 
 /* Seleted styles from Holiday CSS: https://holidaycss.js.org/ */
