@@ -2,7 +2,7 @@ use super::{AppError, StatusCode};
 use chrono::{DateTime, Local};
 use rusqlite::{params, Connection, OptionalExtension};
 
-#[derive(Clone, serde::Deserialize, serde::Serialize)]
+#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
 pub struct Item {
     pub id: u32,
     pub title: String,
@@ -10,6 +10,8 @@ pub struct Item {
     pub important: bool,
     pub urgent: bool,
     pub created: DateTime<Local>,
+    pub modified: Option<DateTime<Local>>,
+    pub deleted: Option<DateTime<Local>>,
 }
 
 impl Item {
@@ -29,6 +31,18 @@ impl Item {
                 format!("Item deserialization failed: {:?}\n\nRaw Item:\n{}", e, str),
             )
         })
+    }
+
+    fn modified(&mut self) {
+        self.modified = Some(Local::now());
+    }
+
+    fn delete(&mut self) {
+        self.deleted = Some(Local::now());
+    }
+
+    fn restore(&mut self) {
+        self.deleted = None;
     }
 }
 
@@ -75,6 +89,8 @@ impl Repo {
             important,
             urgent,
             created: Local::now(),
+            modified: None,
+            deleted: None,
         };
         tx.execute(
             "UPDATE items SET item = ? WHERE rowid = ?",
@@ -86,8 +102,26 @@ impl Repo {
     }
 
     pub fn get(&self, id: u32) -> Result<Item, AppError> {
-        let serialized_item = self
-            .cxn
+        self.get_any(id).and_then(|i| {
+            if i.deleted.is_some() {
+                Err((StatusCode::NOT_FOUND, "Item has been deleted".to_owned()))
+            } else {
+                Ok(i)
+            }
+        })
+    }
+    pub fn get_deleted(&self, id: u32) -> Result<Item, AppError> {
+        self.get_any(id).and_then(|i| {
+            if i.deleted.is_none() {
+                Err((StatusCode::NOT_FOUND, "No such deleted item".to_owned()))
+            } else {
+                Ok(i)
+            }
+        })
+    }
+
+    fn get_any(&self, id: u32) -> Result<Item, AppError> {
+        self.cxn
             .query_row(
                 "SELECT item FROM items WHERE rowid = ?",
                 params![id],
@@ -95,11 +129,31 @@ impl Repo {
             )
             .optional()
             .map_err(convert_db_error)?
-            .ok_or((StatusCode::NOT_FOUND, String::from("No such item")))?;
-        Item::deserialize(&serialized_item)
+            .ok_or((StatusCode::NOT_FOUND, String::from("No such item")))
+            .and_then(|s| Item::deserialize(&s))
     }
 
+    // Get all un-deleted items
     pub fn all(&mut self) -> Result<Vec<Item>, AppError> {
+        let active_items = self
+            .active_and_deleted()?
+            .into_iter()
+            .filter(|item| item.deleted.is_none())
+            .collect();
+        Ok(active_items)
+    }
+
+    // Items that have been deleted
+    pub fn deleted(&mut self) -> Result<Vec<Item>, AppError> {
+        let deleted_items = self
+            .active_and_deleted()?
+            .into_iter()
+            .filter(|item| item.deleted.is_some())
+            .collect();
+        Ok(deleted_items)
+    }
+
+    fn active_and_deleted(&mut self) -> Result<Vec<Item>, AppError> {
         let serialized_items = self.all_items_raw().map_err(convert_db_error)?;
         serialized_items
             .iter()
@@ -114,8 +168,9 @@ impl Repo {
         result.collect()
     }
 
-    pub fn update(&mut self, item: &Item) -> Result<(), AppError> {
+    pub fn update(&mut self, item: &mut Item) -> Result<(), AppError> {
         let cmd = "UPDATE items SET item = ? WHERE rowid = ?";
+        item.modified();
         self.cxn
             .execute(cmd, params![item.serialize()?, item.id])
             .map_err(convert_db_error)
@@ -123,10 +178,10 @@ impl Repo {
     }
 
     pub fn delete(&mut self, id: &u32) -> Result<(), AppError> {
-        self.cxn
-            .execute("DELETE FROM items WHERE rowid = ?", params![id])
-            .map_err(convert_db_error)
-            .map(|_| ())
+        let mut item = self.get(*id)?;
+        item.delete();
+        self.update(&mut item)?;
+        Ok(())
     }
 }
 
@@ -140,13 +195,7 @@ fn convert_db_error(err: rusqlite::Error) -> AppError {
 
 #[test]
 fn test_repo() -> Result<(), AppError> {
-    let cxn = Connection::open_in_memory().map_err(convert_db_error)?;
-    let mut repo = Repo::new(cxn);
-    repo.init().map_err(convert_db_error)?;
-    let mut item = repo.add("Test Item", "Test item body.", true, false)?;
-    let retrieved = repo.get(item.id).unwrap();
-
-    fn check_items(item1: &Item, item2: &Item) {
+    fn compare_item_fields(item1: &Item, item2: &Item) {
         assert!(item1.id == item2.id);
         assert!(item1.title == item2.title);
         assert!(item1.body == item2.body);
@@ -154,15 +203,35 @@ fn test_repo() -> Result<(), AppError> {
         assert!(item1.urgent == item2.urgent);
     }
 
-    check_items(&item, &retrieved);
+    let cxn = Connection::open_in_memory().map_err(convert_db_error)?;
+    let mut repo = Repo::new(cxn);
+    repo.init().map_err(convert_db_error)?;
+
+    let mut item = repo.add("Test Item", "Test item body.", true, false)?;
+    assert!(item.modified.is_none());
+    assert!(item.deleted.is_none());
+
+    let retrieved = repo.get(item.id)?;
+    compare_item_fields(&item, &retrieved);
+    assert!(item.modified.is_none());
+    assert!(item.deleted.is_none());
+    assert!(retrieved.modified.is_none());
+    assert!(retrieved.deleted.is_none());
 
     item.title = String::from("Updated title");
+    repo.update(&mut item)?;
+    assert!(item.modified.is_some());
+    assert!(item.deleted.is_none());
 
-    repo.update(&item)?;
+    let updated = repo.get(item.id)?;
+    compare_item_fields(&item, &updated);
+    assert!(updated.modified.is_some());
+    assert!(updated.deleted.is_none());
 
-    let updated = repo.get(item.id).unwrap();
-
-    check_items(&item, &updated);
+    repo.delete(&item.id)?; // It's too bad this doesn't mark the item as deleted...
+    assert!(repo.get(item.id).is_err());
+    dbg!(repo.get_deleted(item.id));
+    assert!(repo.get_deleted(item.id).is_ok());
 
     Ok(())
 }

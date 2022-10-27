@@ -48,8 +48,9 @@ pub(crate) async fn post_edit_item(
     let mut repo = lock_repo(&repomux)?;
     let mut item = repo.get(item_id)?;
     item.apply(&edits);
-    repo.update(&item)?;
-    Ok(Redirect::to(&format!("/item/{}", item.id)))
+    let goto = Redirect::to(&format!("/item/{}", item.id));
+    repo.update(&mut item)?;
+    Ok(goto)
 }
 
 pub(crate) async fn post_delete_item(
