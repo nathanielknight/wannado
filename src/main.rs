@@ -61,6 +61,7 @@ fn newapp() -> axum::Router {
         )
         .route("/deleted", get(handlers::get_deleted_items))
         .route("/deleted/:id", get(handlers::get_deleted_item))
+        .route("/deleted/:id/restore", post(handlers::restore_item))
         .route("/item/:id", get(handlers::get_item))
         .route(
             "/item/:id/edit",

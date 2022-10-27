@@ -183,6 +183,13 @@ impl Repo {
         self.update(&mut item)?;
         Ok(())
     }
+
+    pub fn restore(&mut self, id: &u32) -> Result<(), AppError> {
+        let mut item = self.get_deleted(*id)?;
+        item.restore();
+        self.update(&mut item)?;
+        Ok(())
+    }
 }
 
 // Helpers

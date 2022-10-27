@@ -101,6 +101,15 @@ pub(crate) async fn get_deleted_item(
     Ok(Html(body))
 }
 
+pub(crate) async fn restore_item(
+    Extension(repomux): Extension<Arc<Mutex<repo::Repo>>>,
+    Path(item_id): Path<u32>,
+) -> Result<Redirect, AppError> {
+    let mut repo = lock_repo(&repomux)?;
+    repo.restore(&item_id)?;
+    Ok(Redirect::to(&format!("/item/{}", item_id)))
+}
+
 // Helpers
 fn lock_repo(repomux: &Arc<Mutex<repo::Repo>>) -> Result<MutexGuard<repo::Repo>, AppError> {
     repomux.lock().map_err(|e| {
