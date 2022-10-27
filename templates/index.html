@@ -2,7 +2,9 @@
 
 {% block main %}
 
+<div class="item-list">
 {% if important_and_urgent.len() > 0 %}
+
 <h1>Important and Urgent</h1>
 <ul>
     {% for item in important_and_urgent %}
@@ -37,6 +39,7 @@
     {% endfor %}
 </ul>
 {% endif %}
+</div>
 
 <script src="/static/index.js"></script>
 {% endblock %}

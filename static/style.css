@@ -1,5 +1,22 @@
 body {
     font-family: Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+    max-width: 40em;
+    margin: auto;
+    font-size: 14pt;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+footer,
+header {
+    margin-top: 1rem;
+    text-align: center;
+    font-size: 80%;
+}
+
+main {
+    flex-grow: 1
 }
 
 span.flag {
@@ -23,7 +40,7 @@ span.flag {
 
 .controls {
     display: flex;
-    align-content: space-between;
+    justify-content: space-between;
     gap: 2em;
 }
 
@@ -31,13 +48,85 @@ span.flag {
     display: flex;
     align-content: stretch;
     justify-content: space-between;
-    padding: 0.2em;
-    border: 1px solid black;
+    padding: 0.5em;
+    border: 1px solid white;
 }
 
-.item-control:hover {
-    background-color: gray;
-}
 .focused-item {
     border: 1px solid green;
+}
+
+a {
+    text-decoration: none;
+}
+
+a:visited {
+    color: black;
+}
+
+a:hover {
+    color: darkgreen;
+    text-decoration: underline;
+}
+
+
+nav {
+    display: flex;
+    gap: 2em;
+    padding: 0 0 0.5em 0;
+    margin: 0 0 0.5em 0;
+    text-decoration: underline;
+}
+
+.item-list ul {
+    list-style: none;
+}
+
+.item-list li {
+    font-size: larger;
+}
+
+.item-list a {
+    color: var(--text-color);
+}
+
+.item-list h1 {
+    font-size: large;
+    color: var(--)
+}
+
+/* Seleted styles from Holiday CSS: https://holidaycss.js.org/ */
+label {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    width: 100%;
+    margin-top: 1rem;
+    padding: 0.3em;
+}
+
+[type=checkbox]+label,
+[type=radio]+label {
+    display: inline-flex;
+    width: unset;
+    vertical-align: auto;
+    margin-right: 1em;
+}
+
+button,
+input,
+optgroup,
+select,
+textarea {
+    font-family: inherit;
+    font-size: 100%;
+    line-height: 1.15;
+    margin: 0
+}
+
+textarea {
+    display: block;
+    width: 100%;
+    min-height: 8em;
+    padding: .5rem
 }
