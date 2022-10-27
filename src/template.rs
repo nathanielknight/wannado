@@ -62,3 +62,21 @@ pub struct NewItem<'a> {
     important: Option<bool>,
     urgent: Option<bool>,
 }
+
+mod filters {
+    //! Additional Askama filters.
+
+    pub fn md(src: &str) -> askama::Result<String> {
+        use pulldown_cmark::{html, Options, Parser};
+
+        let mut options = Options::empty();
+        options.insert(Options::ENABLE_TABLES);
+        options.insert(Options::ENABLE_TASKLISTS);
+        options.insert(Options::ENABLE_SMART_PUNCTUATION);
+
+        let parser = Parser::new_ext(src, options);
+        let mut output = String::new();
+        html::push_html(&mut output, parser);
+        Ok(output)
+    }
+}
