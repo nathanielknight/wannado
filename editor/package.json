@@ -1,0 +1,13 @@
+{
+  "name": "editor",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "esbuild": "^0.15.12"
+  },
+  "dependencies": {
+    "@codemirror/lang-markdown": "^6.0.3",
+    "codemirror": "^6.0.1"
+  }
+}
