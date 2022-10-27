@@ -32,8 +32,12 @@ span.flag {
     align-content: stretch;
     justify-content: space-between;
     padding: 0.2em;
+    border: 1px solid black;
 }
 
 .item-control:hover {
     background-color: gray;
+}
+.focused-item {
+    border: 1px solid green;
 }
