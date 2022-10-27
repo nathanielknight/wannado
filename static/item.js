@@ -10,7 +10,6 @@ function deleteItem() {
     if (response) {
         form?.submit();
     }
-
 }
 
 hotkey('e', editItem);

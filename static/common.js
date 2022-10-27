@@ -36,16 +36,23 @@ function handleHotkey(evt) {
 
 document.body.addEventListener('keydown', handleHotkey, false);
 
+function followLink(selector) {
+    let link = document.querySelector(selector);
+    goto(link?.href);
+}
+
 function goHome() {
-    let homeLink = document.querySelector("a#home");
-    goto(homeLink?.href);
+    followLink("a#home");
 }
 
 function newItem() {
-    let newItemLink = document.querySelector("a#new-item");
-    goto(newItemLink?.href);
+    followLink("a#new-item");
+}
 
+function deletedItems() {
+    followLink("a#deleted-items")
 }
 
 hotkey('h', goHome);
 hotkey('n', newItem);
+hotkey('d', deletedItems);
