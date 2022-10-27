@@ -45,7 +45,7 @@ fn newapp() -> axum::Router {
     use repo::Repo;
 
     let static_files =
-        get_service(ServeDir::new("./static")).handle_error(|err: std::io::Error| async move {
+        get_service(ServeDir::new("./static").precompressed_br()).handle_error(|err: std::io::Error| async move {
             (StatusCode::NOT_FOUND, format!("Not Found: {}", err))
         });
     let cxn = rusqlite::Connection::open("./items.sqlite3").expect("Couldn't open database");
