@@ -54,6 +54,7 @@ impl TryFrom<Vec<repo::Item>> for DeletedItems {
             ))
         } else {
             items.sort_by_key(|i| i.deleted);
+            items.reverse();
             Ok(DeletedItems { items })
         }
     }

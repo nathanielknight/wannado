@@ -12,7 +12,8 @@ pub(crate) async fn get_items(
     Extension(repomux): Extension<Arc<Mutex<repo::Repo>>>,
 ) -> Result<Html<String>, AppError> {
     let mut repo = lock_repo(&repomux)?;
-    let items = repo.all()?;
+    let mut items = repo.all()?;
+    items.sort_by_key(|i| (i.modified, i.created));
     let viewmodel = template::ItemsList::from_items(&items)?;
     let body = viewmodel.to_string();
     Ok(Html(body))
