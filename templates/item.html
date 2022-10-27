@@ -2,8 +2,8 @@
 
 {% block main %}
 <div class="controls detail-controls">
-    <a href="/item/{{item.id}}/edit"><button>Edit</button></a>
-    <form action="/item/{{item.id}}/delete" method="post">
+    <a href="/item/{{item.id}}/edit" class="edit-item"><button>Edit</button></a>
+    <form action="/item/{{item.id}}/delete" class="delete-item" method="post">
         <input type="submit" value="Delete" name="delete"
             onclick="return confirm(`Delete this item? This can't be undone.`)" style="background-color: darkred" />
     </form>
@@ -20,4 +20,6 @@
 <hr />
 
 <div>{{item.body}}</div>
+
+<script src="/static/item.js"></script>
 {% endblock %}
