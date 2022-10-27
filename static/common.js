@@ -36,5 +36,16 @@ function handleHotkey(evt) {
 
 document.body.addEventListener('keydown', handleHotkey, false);
 
-hotkey('h', () => goto('/'));
-hotkey('n', () => goto("/item/new"));
+function goHome() {
+    let homeLink = document.querySelector("a#home");
+    goto(homeLink?.href);
+}
+
+function newItem() {
+    let newItemLink = document.querySelector("a#new-item");
+    goto(newItemLink?.href);
+
+}
+
+hotkey('h', goHome);
+hotkey('n', newItem);
