@@ -23,7 +23,7 @@ async fn main() {
                 .parse()
                 .expect("Expected a socket address. eg:\n127.0.0.1:3000")
         } else {
-            println!("usage: eisenhower-todo ADDRESS");
+            println!("usage: wannado ADDRESS");
             let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
             println!("using default address({addr})");
             addr
