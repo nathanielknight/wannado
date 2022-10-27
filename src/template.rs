@@ -38,7 +38,7 @@ impl<'a> Index<'a> {
 }
 
 #[derive(Template)]
-#[template(path = "deleted_index.html")]
+#[template(path = "deleted-index.html")]
 pub struct DeletedItems {
     items: Vec<repo::Item>,
 }
@@ -81,7 +81,7 @@ impl TryFrom<repo::Item> for Item {
 }
 
 #[derive(Template)]
-#[template(path = "edit_item.html")]
+#[template(path = "edit-item.html")]
 pub struct EditItem {
     item: repo::Item,
 }
@@ -102,7 +102,7 @@ impl TryFrom<repo::Item> for EditItem {
 }
 
 #[derive(Template, Default)]
-#[template(path = "new_item.html")]
+#[template(path = "new-item.html")]
 pub struct NewItem<'a> {
     title: Option<&'a str>,
     body: Option<&'a str>,
@@ -111,7 +111,7 @@ pub struct NewItem<'a> {
 }
 
 #[derive(Template)]
-#[template(path = "deleted_item.html")]
+#[template(path = "deleted-item.html")]
 pub struct DeletedItem {
     item: repo::Item,
 }
