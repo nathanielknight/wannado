@@ -22,7 +22,9 @@ pub fn start_recurring_script() {
 
 fn recurring_script(cmd: String) {
     let timeout = if let Ok(src) = std::env::var("WANNADO_SCRIPT_INTERVAL_IN_SECONDS") {
-        let seconds = src.parse::<u64>().expect("Invalid script timeout, expected WANNADO_SCRIPT_INTERVAL_IN_SECOND to be an integer");
+        let seconds = src.parse::<u64>().expect(
+            "Invalid script timeout, expected WANNADO_SCRIPT_INTERVAL_IN_SECOND to be an integer",
+        );
         let t = Duration::from_secs(seconds);
         println!("Using custon script interval: {:?}", t);
         t
