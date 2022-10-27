@@ -13,7 +13,7 @@ pub(crate) async fn get_index(
 ) -> Result<Html<String>, AppError> {
     let mut repo = lock_repo(&repomux)?;
     let items = repo.all()?;
-    let viewmodel = template::Index::from_items(&items);
+    let viewmodel = template::Index::from_items(&items)?;
     let body = viewmodel.to_string();
     Ok(Html(body))
 }
@@ -24,7 +24,7 @@ pub(crate) async fn get_item(
 ) -> Result<Html<String>, AppError> {
     let repo = lock_repo(&repomux)?;
     let item = repo.get(item_id)?;
-    let viewmodel: template::Item = item.into();
+    let viewmodel: template::Item = item.try_into()?;
     let body = viewmodel.to_string();
     Ok(Html(body))
 }
@@ -35,7 +35,7 @@ pub(crate) async fn get_edit_item(
 ) -> Result<Html<String>, AppError> {
     let repo = lock_repo(&repomux)?;
     let item = repo.get(item_id)?;
-    let viewmodel: template::EditItem = item.into();
+    let viewmodel: template::EditItem = item.try_into()?;
     let body = viewmodel.to_string();
     Ok(Html(body))
 }
@@ -78,6 +78,27 @@ pub(crate) async fn post_new_item(
         edits.urgent.is_some(),
     )?;
     Ok(Redirect::to(&format!("/item/{}", item.id)))
+}
+
+pub(crate) async fn get_deleted_items(
+    Extension(repomux): Extension<Arc<Mutex<repo::Repo>>>,
+) -> Result<Html<String>, AppError> {
+    let mut repo = lock_repo(&repomux)?;
+    let items = repo.deleted()?;
+    let viewmodel = template::DeletedItems::try_from(items)?;
+    let body = viewmodel.to_string();
+    Ok(Html(body))
+}
+
+pub(crate) async fn get_deleted_item(
+    Extension(repomux): Extension<Arc<Mutex<repo::Repo>>>,
+    Path(item_id): Path<u32>,
+) -> Result<Html<String>, AppError> {
+    let repo = lock_repo(&repomux)?;
+    let item = repo.get_deleted(item_id)?;
+    let viewmodel: template::DeletedItem = item.try_into()?;
+    let body = viewmodel.to_string();
+    Ok(Html(body))
 }
 
 // Helpers

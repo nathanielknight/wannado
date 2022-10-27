@@ -1,4 +1,5 @@
 use crate::repo;
+use crate::{AppError, StatusCode};
 use askama::Template;
 
 #[derive(Template)]
@@ -11,13 +12,19 @@ pub struct Index<'a> {
 }
 
 impl<'a> Index<'a> {
-    pub fn from_items(items: &'a Vec<repo::Item>) -> Index<'a> {
+    pub fn from_items(items: &'a Vec<repo::Item>) -> Result<Index<'a>, AppError> {
         let mut index = Index {
             important_and_urgent: Vec::new(),
             important: Vec::new(),
             urgent: Vec::new(),
             other: Vec::new(),
         };
+        if items.iter().any(|i| i.deleted.is_some()) {
+            return Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Deleted item ended up in list of items".to_owned(),
+            ));
+        }
         for item in items {
             match (item.important, item.urgent) {
                 (true, true) => index.important_and_urgent.push(item),
@@ -26,7 +33,29 @@ impl<'a> Index<'a> {
                 (false, false) => index.other.push(item),
             }
         }
-        index
+        Ok(index)
+    }
+}
+
+#[derive(Template)]
+#[template(path = "deleted_index.html")]
+pub struct DeletedItems {
+    items: Vec<repo::Item>,
+}
+
+impl TryFrom<Vec<repo::Item>> for DeletedItems {
+    type Error = AppError;
+
+    fn try_from(mut items: Vec<repo::Item>) -> Result<Self, Self::Error> {
+        if items.iter().any(|i| i.deleted.is_none()) {
+            Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Active item ended up in deleted list".to_owned(),
+            ))
+        } else {
+            items.sort_by_key(|i| i.deleted);
+            Ok(DeletedItems { items })
+        }
     }
 }
 
@@ -36,9 +65,18 @@ pub struct Item {
     item: repo::Item,
 }
 
-impl From<repo::Item> for Item {
-    fn from(item: repo::Item) -> Self {
-        Item { item }
+impl TryFrom<repo::Item> for Item {
+    type Error = AppError;
+
+    fn try_from(item: repo::Item) -> Result<Self, Self::Error> {
+        if item.deleted.is_some() {
+            Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Tried to render a deleted item.".to_owned(),
+            ))
+        } else {
+            Ok(Item { item })
+        }
     }
 }
 
@@ -48,9 +86,18 @@ pub struct EditItem {
     item: repo::Item,
 }
 
-impl From<repo::Item> for EditItem {
-    fn from(item: repo::Item) -> Self {
-        EditItem { item }
+impl TryFrom<repo::Item> for EditItem {
+    type Error = AppError;
+
+    fn try_from(item: repo::Item) -> Result<Self, Self::Error> {
+        if item.deleted.is_some() {
+            Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Tried to edit a deleted item".to_owned(),
+            ))
+        } else {
+            Ok(EditItem { item })
+        }
     }
 }
 
@@ -61,6 +108,27 @@ pub struct NewItem<'a> {
     body: Option<&'a str>,
     important: Option<bool>,
     urgent: Option<bool>,
+}
+
+#[derive(Template)]
+#[template(path = "deleted_item.html")]
+pub struct DeletedItem {
+    item: repo::Item,
+}
+
+impl TryFrom<repo::Item> for DeletedItem {
+    type Error = AppError;
+
+    fn try_from(item: repo::Item) -> Result<Self, Self::Error> {
+        if item.deleted.is_none() {
+            Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Tried to edit a deleted item".to_owned(),
+            ))
+        } else {
+            Ok(DeletedItem { item })
+        }
+    }
 }
 
 mod filters {

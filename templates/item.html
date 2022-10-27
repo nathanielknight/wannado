@@ -16,6 +16,9 @@
     {% if item.urgent %}<span class="flag urgent">urgent</span>{% endif %}
 </p>
 <p>Created {{item.created.to_rfc2822()}}</p>
+{% if item.modified.is_some() %}
+<p>Last modified {{item.modified.unwrap().to_rfc2822()}}</p>
+{% endif %}
 
 <hr />
 

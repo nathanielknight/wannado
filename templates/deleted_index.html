@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block main %}
+
+<h1 class="alert">These items have been deleted</h1>
+<div class="item-list">
+<ul>
+    {% for item in items %}
+    <li>{% include "deleted-item-control.html" %}</li>
+    {% endfor %}
+</ul>
+
+<script src="/static/deleted-index.js"></script>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block main %}
+<h1 class="alert">This item has been deleted</h1>
+
+<div class="controls detail-controls">
+    <form action="/deleted/{{item.id}}/restore" class="restore-item" method="post">
+        <input type="submit" value="Restore" name="restore" />
+    </form>
+</div>
+
+
+<h1>{{item.title}}</h1>
+
+<p>
+    {% if item.important %}<span class="flag important">important</span>{% endif %}
+    {% if item.urgent %}<span class="flag urgent">urgent</span>{% endif %}
+</p>
+<p>Created {{item.created.to_rfc2822()}}</p>
+<p>Deleted {{item.deleted.unwrap().to_rfc2822()}}</p>
+
+<hr />
+
+<div>{{item.body|md|safe}}</div>
+
+<script src="/static/deleted-item.js"></script>
+{% endblock %}

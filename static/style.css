@@ -95,6 +95,12 @@ nav {
     color: var(--)
 }
 
+.alert {
+    font-size: large;
+    text-align: center;
+    background-color: orange;
+}
+
 /* Seleted styles from Holiday CSS: https://holidaycss.js.org/ */
 label {
     display: flex;
