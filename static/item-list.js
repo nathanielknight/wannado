@@ -24,6 +24,17 @@ function setFocusedItem(item) {
         item.classList.remove('focused-item');
     })
     item.classList.add('focused-item')
+    ensureVisible(item)
+}
+
+function ensureVisible(item) {
+    const boundingRect = item.getBoundingClientRect();
+    if (boundingRect.bottom > window.innerHeight) {
+        item.scrollIntoView(false)
+    }
+    if (boundingRect.top < 0) {
+        item.scrollIntoView()
+    }
 }
 
 function focusPreviousItem() {
