@@ -1,5 +1,5 @@
 use super::{AppError, StatusCode};
-use chrono::{DateTime, Local};
+use chrono::Utc;
 use rusqlite::{params, Connection, OptionalExtension};
 
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
@@ -9,9 +9,9 @@ pub struct Item {
     pub body: String,
     pub important: bool,
     pub urgent: bool,
-    pub created: DateTime<Local>,
-    pub modified: Option<DateTime<Local>>,
-    pub deleted: Option<DateTime<Local>>,
+    pub created: i64,
+    pub modified: Option<i64>,
+    pub deleted: Option<i64>,
 }
 
 impl Item {
@@ -34,11 +34,11 @@ impl Item {
     }
 
     fn modified(&mut self) {
-        self.modified = Some(Local::now());
+        self.modified = Some(Utc::now().timestamp());
     }
 
     fn delete(&mut self) {
-        self.deleted = Some(Local::now());
+        self.deleted = Some(Utc::now().timestamp());
     }
 
     fn restore(&mut self) {
@@ -88,7 +88,7 @@ impl Repo {
             body: String::from(body),
             important,
             urgent,
-            created: Local::now(),
+            created: Utc::now().timestamp(),
             modified: None,
             deleted: None,
         };

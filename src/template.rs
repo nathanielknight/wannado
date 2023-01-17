@@ -1,6 +1,44 @@
 use crate::repo;
 use crate::{AppError, StatusCode};
 use askama::Template;
+use chrono::{DateTime, TimeZone, Utc, Local};
+
+struct ViewItem {
+    pub id: u32,
+    pub title: String,
+    pub body: String,
+    pub important: bool,
+    pub urgent: bool,
+    pub created: DateTime<Local>,
+    pub modified: Option<DateTime<Local>>,
+    pub deleted: Option<DateTime<Local>>,
+}
+
+impl<'a> TryFrom<&'a repo::Item> for ViewItem {
+    type Error = AppError;
+
+    fn try_from(item: &'a repo::Item) -> Result<ViewItem, Self::Error> {
+        fn parse_ts(ts: i64) -> Result<DateTime<Local>, AppError> {
+            Utc.timestamp_opt(ts, 0).single().ok_or((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                format!("Error deserializing timestamp from {}", ts),
+            )).map(|utc| utc.into())
+        }
+        let created = parse_ts(item.created)?;
+        let modified = item.modified.map(parse_ts).transpose()?;
+        let deleted = item.deleted.map(parse_ts).transpose()?;
+        Ok(ViewItem {
+            id: item.id,
+            title: item.title.clone(),
+            body: item.body.clone(),
+            important: item.important,
+            urgent: item.urgent,
+            created,
+            modified,
+            deleted,
+        })
+    }
+}
 
 #[derive(Template)]
 #[template(path = "items-list.html")]
@@ -63,7 +101,7 @@ impl TryFrom<Vec<repo::Item>> for DeletedItems {
 #[derive(Template)]
 #[template(path = "item.html")]
 pub struct Item {
-    item: repo::Item,
+    item: ViewItem,
 }
 
 impl TryFrom<repo::Item> for Item {
@@ -76,7 +114,7 @@ impl TryFrom<repo::Item> for Item {
                 "Tried to render a deleted item.".to_owned(),
             ))
         } else {
-            Ok(Item { item })
+            ViewItem::try_from(&item).map(|item| Item { item })
         }
     }
 }
@@ -84,7 +122,7 @@ impl TryFrom<repo::Item> for Item {
 #[derive(Template)]
 #[template(path = "edit-item.html")]
 pub struct EditItem {
-    item: repo::Item,
+    item: ViewItem,
 }
 
 impl TryFrom<repo::Item> for EditItem {
@@ -97,7 +135,7 @@ impl TryFrom<repo::Item> for EditItem {
                 "Tried to edit a deleted item".to_owned(),
             ))
         } else {
-            Ok(EditItem { item })
+            ViewItem::try_from(&item).map(|item| EditItem { item })
         }
     }
 }
@@ -114,7 +152,7 @@ pub struct NewItem<'a> {
 #[derive(Template)]
 #[template(path = "deleted-item.html")]
 pub struct DeletedItem {
-    item: repo::Item,
+    item: ViewItem,
 }
 
 impl TryFrom<repo::Item> for DeletedItem {
@@ -127,7 +165,7 @@ impl TryFrom<repo::Item> for DeletedItem {
                 "Tried to edit a deleted item".to_owned(),
             ))
         } else {
-            Ok(DeletedItem { item })
+            ViewItem::try_from(&item).map(|item| DeletedItem { item })
         }
     }
 }
