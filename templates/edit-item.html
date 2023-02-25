@@ -4,8 +4,7 @@
 <div class="controls detail-controls">
     <a href="/item/{{item.id}}"><button>Cancel</button></a>
     <form action="/item/{{item.id}}/delete" method="post">
-        <input type="submit" value="Delete" name="delete"
-            onclick="return confirm(`Delete this item?`)" style="background-color: darkred" />
+        <input type="submit" value="Delete" name="delete" onclick="return confirm(`Delete this item?`)" />
     </form>
 </div>
 

@@ -57,26 +57,28 @@ span.flag {
     border: 1px solid green;
 }
 
-a {
-    text-decoration: none;
-}
-
-a:visited {
-    color: black;
-}
-
-a:hover {
-    color: darkgreen;
-    text-decoration: underline;
-}
-
-
 nav {
     display: flex;
     gap: 2em;
     padding: 0 0 0.5em 0;
     margin: 0 0 0.5em 0;
     text-decoration: underline;
+}
+
+nav a, footer a {
+    color: #0000ee;
+}
+
+input[name=delete][type=submit] {
+    border-color: darkred;
+    appearance: none;
+}
+
+button,
+input[type=submit] {
+    border-radius: 0.2rem;
+    appearance: none;
+    border-color: black;
 }
 
 .item-list ul {
