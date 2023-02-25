@@ -9,6 +9,7 @@ textarea.style.display = "none";
 let view = new EditorView({
     doc: textarea.value,
     extensions: [
+        EditorView.lineWrapping,
         basicSetup,
         markdown({})
     ],
