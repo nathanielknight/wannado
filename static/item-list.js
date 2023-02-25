@@ -56,3 +56,11 @@ hotkey('k', focusPreviousItem);
 hotkey('Enter', gotoFocusedItem);
 
 document.querySelector('.item-control')?.classList.add('focused-item');
+
+document.querySelectorAll('.item-control')?.forEach(item => {
+    item.addEventListener("click", (evt) => {
+        if (evt.target?.classList?.contains("item-control")) {
+            setFocusedItem(evt.target);
+        }
+    });
+})
