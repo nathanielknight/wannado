@@ -8,6 +8,9 @@ for keeping notes, links, checklists,etc.
 Each item can be Important and/or Urgent.
 These items are stored in a [SQLite] database.
 
+Wannado is provided under the [Prosperity Public License].
+Participants are expected to abide by the [Contributor Covenant].
+
 As well as this web app you can provide a script for Wannado to run at
 regular intervals. This script can access the app's database, so it can
 do whatever you want:
@@ -116,3 +119,5 @@ This format may change in the future.
 [SQLite]: https://www.sqlite.org/index.html
 [`std::process::Command::new`]: https://doc.rust-lang.org/std/process/struct.Command.html#method.new
 [SQLite JSON functions]: https://www.sqlite.org/json1.html
+[Prosperity Public License]: https://prosperitylicense.com/versions/3.0.0
+[Contributor Covenant]: https://www.contributor-covenant.org/
