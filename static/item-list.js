@@ -55,6 +55,8 @@ hotkey('j', focusNextItem);
 hotkey('k', focusPreviousItem);
 hotkey('Enter', gotoFocusedItem);
 
+// TODO: Edit focused item?
+
 document.querySelector('.item-control')?.classList.add('focused-item');
 
 document.querySelectorAll('.item-control')?.forEach(item => {
