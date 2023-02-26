@@ -1,7 +1,14 @@
 function gotoFocusedItem() {
     let focusedItem = document.querySelector('.focused-item');
     if (focusedItem != null) {
-        goto(focusedItem.querySelector('a')?.href)
+        goto(focusedItem.querySelector('a')?.href);
+    }
+}
+
+function editFocusedItem() {
+    let focusedItem = document.querySelector('.focused-item');
+    if (focusedItem != null) {
+        goto(focusedItem.querySelector('a.edit-item')?.href);
     }
 }
 
@@ -53,6 +60,7 @@ function focusPreviousItem() {
 
 hotkey('j', focusNextItem);
 hotkey('k', focusPreviousItem);
+hotkey('e', editFocusedItem);
 hotkey('Enter', gotoFocusedItem);
 
 // TODO: Edit focused item?

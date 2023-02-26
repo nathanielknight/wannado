@@ -56,6 +56,8 @@ If you want it to be accessible on the go, I can suggest two options:
 
 ## Hotkeys
 
+Global:
+
 | Key | Action |
 |-|-|
 | `h` | Go to Home page |
@@ -69,6 +71,7 @@ On the home page:
 | `j` | Select next item |
 | `k` | Select previous item |
 | `Enter` | Go to selected item |
+| `e` | Edit the selected item |
 
 On an item page:
 
