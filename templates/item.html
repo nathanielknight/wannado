@@ -2,10 +2,11 @@
 
 {% block main %}
 <div class="controls detail-controls">
-    <a href="/item/{{item.id}}/edit" class="edit-item"><button>Edit</button></a>
+    <a href="/item/{{item.id}}/edit" class="control"><button><img src="/static/icons/edit.svg" />Edit</button></a>
     <form action="/item/{{item.id}}/delete" class="delete-item" method="post">
-        <input type="submit" value="Delete" name="delete"
-            onclick="return confirm(`Delete this item?`)" />
+        <button name="delete" onclick="return confirm (`Delete this item?`)">
+            <img src="/static/icons/delete.svg" /> Delete
+        </button>
     </form>
 </div>
 

@@ -2,13 +2,16 @@
 
 {% block main %}
 <div class="controls detail-controls">
-    <a href="/item/{{item.id}}"><button>Cancel</button></a>
-    <form action="/item/{{item.id}}/delete" method="post">
-        <input type="submit" value="Delete" name="delete" onclick="return confirm(`Delete this item?`)" />
+    <a href="/item/{{item.id}}" class="control"><button class="cancel"><img src="/static/icons/cancel.svg" />Cancel</button></a>
+    <form class="delete-control" action="/item/{{item.id}}/delete" method="post">
+        <button name="delete" onclick="return confirm(`Delete this item?`)">
+            <img src="/static/icons/delete.svg" />Delete
+        </button>
     </form>
+    <button form="item"><img src="/static/icons/save.svg" />Save</button>
 </div>
 
-<form action="/item/{{item.id}}/edit" method="post">
+<form action="/item/{{item.id}}/edit" method="post" id="item">
     <label for="title">Title</label>
     <input type="text" name="title" value="{{item.title}}" />
 
@@ -22,8 +25,6 @@
     </div>
     <label for="body">Body</label>
     <textarea name="body">{{item.body}}</textarea>
-
-    <input type="submit" value="Update" />
 </form>
 <script src="/static/editor.js"></script>
 {% endblock %}

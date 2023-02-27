@@ -62,14 +62,20 @@ nav {
     gap: 2em;
     padding: 0 0 0.5em 0;
     margin: 0 0 0.5em 0;
+}
+
+nav a,
+footer a {
+    color: #282a36;
     text-decoration: underline;
 }
 
-nav a, footer a {
-    color: #0000ee;
+nav a {
+    display: flex;
+    align-items: center;
 }
 
-input[name=delete][type=submit] {
+button[name=delete] {
     border-color: darkred;
     appearance: none;
 }
@@ -79,6 +85,7 @@ input[type=submit] {
     border-radius: 0.2rem;
     appearance: none;
     border-color: black;
+    display: flex;
 }
 
 .item-list ul {
@@ -142,4 +149,21 @@ textarea {
     width: 100%;
     min-height: 8em;
     padding: .5rem
+}
+
+button img {
+    height: 1em;
+}
+
+a.control {
+    text-decoration: none;
+}
+
+button {
+    display: flex;
+    align-items: center;
+}
+
+.item-control a {
+    text-decoration: none;
 }
