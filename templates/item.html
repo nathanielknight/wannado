@@ -2,7 +2,7 @@
 
 {% block main %}
 <div class="controls detail-controls">
-    <a href="/item/{{item.id}}/edit" class="control"><button><img src="/static/icons/edit.svg" />Edit</button></a>
+    <a href="/item/{{item.id}}/edit" class="control edit-item"><button><img src="/static/icons/edit.svg" />Edit</button></a>
     <form action="/item/{{item.id}}/delete" class="delete-item" method="post">
         <button name="delete" onclick="return confirm (`Delete this item?`)">
             <img src="/static/icons/delete.svg" /> Delete
